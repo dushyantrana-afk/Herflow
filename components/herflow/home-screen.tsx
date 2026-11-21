@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ArrowRight, Bell, Check, ChevronRight, MapPin, ShieldCheck, Sparkles } from 'lucide-react'
+import { ArrowRight, Bell, Check, ChevronRight, MapPin, MessageCircle, ShieldCheck, Sparkles, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, Chip, SectionHeader, StockBadge, StockBar } from './primitives'
 import { RequestStatusCard } from './request-status-card'
@@ -19,7 +19,7 @@ export function HomeScreen({
   onCancelRequest,
   onDismissRequest,
 }: {
-  onNavigate: (tab: TabId, supportView?: 'padwatch') => void
+  onNavigate: (tab: TabId, supportView?: 'padwatch' | 'community' | 'periodmate') => void
   onOpenSos: () => void
   request: PadRequest | null
   onCompleteRequest: () => void
@@ -62,6 +62,8 @@ export function HomeScreen({
       <SymptomCheckIn />
 
       <NearbySupply onViewMap={() => onNavigate('support', 'padwatch')} />
+
+      <CommunityChatEntry onOpen={() => onNavigate('support', 'community')} />
 
       <AssistantEntry onOpen={() => onNavigate('assistant')} />
     </div>
@@ -268,6 +270,30 @@ function AssistantEntry({ onOpen }: { onOpen: () => void }) {
         <span className="block text-base font-semibold">Ask PeriodLens</span>
         <span className="mt-0.5 block text-sm text-muted-foreground">
           Private AI answers in English &amp; हिंदी
+        </span>
+      </span>
+      <ArrowRight
+        className="size-5 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+        aria-hidden="true"
+      />
+    </button>
+  )
+}
+
+function CommunityChatEntry({ onOpen }: { onOpen: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="group flex w-full items-center gap-4 rounded-3xl border border-border/70 bg-gradient-to-r from-lavender-soft to-card p-5 text-left transition-shadow hover:shadow-md"
+    >
+      <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-card shadow-sm">
+        <Users className="size-5 text-primary" aria-hidden="true" />
+      </span>
+      <span className="flex-1">
+        <span className="block text-base font-semibold">Campus Community Chat</span>
+        <span className="mt-0.5 block text-sm text-muted-foreground">
+          Ask for pads, offer help &amp; chat with campus peers
         </span>
       </span>
       <ArrowRight
