@@ -1,0 +1,109 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: var(--font-manrope), var(--font-devanagari), ui-sans-serif, system-ui, sans-serif;
+  --color-lavender: var(--lavender);
+  --color-lavender-soft: var(--lavender-soft);
+  --color-rose: var(--rose);
+  --color-rose-soft: var(--rose-soft);
+  --color-sage: var(--sage);
+  --color-sage-soft: var(--sage-soft);
+  --color-sage-strong: var(--sage-strong);
+  --color-rose-strong: var(--rose-strong);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  color-scheme: light;
+  --background: #f8f7f5;
+  --foreground: #292832;
+  --card: #ffffff;
+  --card-foreground: #292832;
+  --popover: #ffffff;
+  --popover-foreground: #292832;
+  /* Deeper than brand lavender so white button text meets WCAG AA */
+  --primary: #625898;
+  --primary-foreground: #ffffff;
+  --secondary: #efedf6;
+  --secondary-foreground: #3f3866;
+  --muted: #f1efec;
+  --muted-foreground: #6b6976;
+  --accent: #efedf6;
+  --accent-foreground: #3f3866;
+  --destructive: #b4434f;
+  --border: #e8e5e0;
+  --input: #e8e5e0;
+  --ring: #8b82b8;
+  --radius: 1rem;
+
+  --lavender: #8b82b8;
+  --lavender-soft: #efedf6;
+  --rose: #d8a5ac;
+  --rose-soft: #f7e9eb;
+  --rose-strong: #9c4f5a;
+  --sage: #a8b8a1;
+  --sage-soft: #edf1eb;
+  --sage-strong: #4f6448;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html,
+  body {
+    @apply bg-background text-foreground font-sans;
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@keyframes herflow-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+.herflow-pulse {
+  animation: herflow-pulse 2.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .herflow-pulse {
+    animation: none;
+  }
+}
