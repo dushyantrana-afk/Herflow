@@ -111,6 +111,90 @@ export type CommunityPost = {
   time: string
 }
 
+export type CommunityMessageType = 'chat' | 'ask_pad' | 'offer_pad' | 'urgent'
+
+export type CommunityChatMessage = {
+  id: string
+  userId?: string | null
+  senderName: string
+  senderCampus: string
+  isVerifiedStudent: boolean
+  isAnonymous: boolean
+  content: string
+  messageType: CommunityMessageType
+  item?: string
+  location?: string
+  status?: 'open' | 'helped' | 'resolved'
+  helpedBy?: string | null
+  time: string
+  createdAt: string
+}
+
+export const initialCommunityMessages: CommunityChatMessage[] = [
+  {
+    id: 'msg-1',
+    senderName: 'Pooja · 2nd yr',
+    senderCampus: 'IIT Delhi',
+    isVerifiedStudent: true,
+    isAnonymous: false,
+    content: 'Good morning everyone! Just checked and the pad dispenser at Central Library (Ground floor) was just refilled with fresh stock.',
+    messageType: 'chat',
+    time: '25m ago',
+    createdAt: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 'msg-2',
+    senderName: 'Anonymous Student',
+    senderCampus: 'IIT Delhi',
+    isVerifiedStudent: true,
+    isAnonymous: true,
+    content: 'SOS! Period started unexpectedly during class. Can anyone spare a regular or heavy flow pad near Lecture Hall Complex?',
+    messageType: 'ask_pad',
+    item: 'Regular pad',
+    location: 'LHC, 1st floor washroom',
+    status: 'helped',
+    helpedBy: 'Riya (Himadri)',
+    time: '18m ago',
+    createdAt: new Date(Date.now() - 18 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 'msg-3',
+    senderName: 'Riya · Himadri Hostel',
+    senderCampus: 'IIT Delhi',
+    isVerifiedStudent: true,
+    isAnonymous: false,
+    content: 'Just handed one over to you outside the LHC washroom! Hope you are feeling better ❤️',
+    messageType: 'chat',
+    time: '14m ago',
+    createdAt: new Date(Date.now() - 14 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 'msg-4',
+    senderName: 'Tanvi K. · PhD',
+    senderCampus: 'IIT Delhi',
+    isVerifiedStudent: true,
+    isAnonymous: false,
+    content: 'I have 2 extra heavy flow pads and panty liners in my locker. Happy to share with anyone who needs them today!',
+    messageType: 'offer_pad',
+    item: '2 × Heavy flow pads',
+    location: 'Central Library, 2nd floor study cubicles',
+    status: 'open',
+    time: '8m ago',
+    createdAt: new Date(Date.now() - 8 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 'msg-5',
+    senderName: 'Anonymous Student',
+    senderCampus: 'IIT Delhi',
+    isVerifiedStudent: true,
+    isAnonymous: true,
+    content: 'Does anyone have a heating pad or hot water bag at Himadri Hostel Block B? Having intense day 1 cramps 🥺',
+    messageType: 'chat',
+    time: '3m ago',
+    createdAt: new Date(Date.now() - 3 * 60 * 1000).toISOString(),
+  },
+]
+
 export const communityPosts: CommunityPost[] = [
   { id: 'c1', kind: 'request', alias: 'Anonymous', location: 'LHC, 1st floor', item: 'Regular pad', time: '2 min ago' },
   { id: 'c2', kind: 'offer', alias: 'Willow', location: 'Central Library', item: '2 × Heavy flow pads', time: '8 min ago' },

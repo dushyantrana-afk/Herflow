@@ -210,6 +210,53 @@ export interface Database {
           created_at?: string
         }
       }
+      community_messages: {
+        Row: {
+          id: string
+          user_id: string | null
+          sender_name: string
+          sender_campus: string
+          is_verified: boolean
+          is_anonymous: boolean
+          content: string
+          message_type: 'chat' | 'ask_pad' | 'offer_pad' | 'urgent'
+          item: string | null
+          location: string | null
+          status: 'open' | 'helped' | 'resolved'
+          helped_by: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          sender_name?: string
+          sender_campus?: string
+          is_verified?: boolean
+          is_anonymous?: boolean
+          content: string
+          message_type?: 'chat' | 'ask_pad' | 'offer_pad' | 'urgent'
+          item?: string | null
+          location?: string | null
+          status?: 'open' | 'helped' | 'resolved'
+          helped_by?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          sender_name?: string
+          sender_campus?: string
+          is_verified?: boolean
+          is_anonymous?: boolean
+          content?: string
+          message_type?: 'chat' | 'ask_pad' | 'offer_pad' | 'urgent'
+          item?: string | null
+          location?: string | null
+          status?: 'open' | 'helped' | 'resolved'
+          helped_by?: string | null
+          created_at?: string
+        }
+      }
     }
   }
 }

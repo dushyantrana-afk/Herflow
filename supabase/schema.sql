@@ -202,12 +202,58 @@ create policy "Users can manage own cycle history"
   with check ( (select auth.uid()) = user_id );
 
 
--- 7. ENABLE REALTIME
+-- 7. COMMUNITY CHAT MESSAGES (Live Campus Help & Pad Chat)
 -- -----------------------------------------------------------------------------
--- Enable real-time updates for emergency pad requests and dispenser telemetry
+create table if not exists public.community_messages (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users on delete set null,
+  sender_name text not null default 'Anonymous Student',
+  sender_campus text not null default 'IIT Delhi',
+  is_verified boolean not null default true,
+  is_anonymous boolean not null default true,
+  content text not null,
+  message_type text not null default 'chat' check (message_type in ('chat', 'ask_pad', 'offer_pad', 'urgent')),
+  item text,
+  location text,
+  status text not null default 'open' check (status in ('open', 'helped', 'resolved')),
+  helped_by text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.community_messages enable row level security;
+
+create policy "Anyone can read community messages"
+  on public.community_messages for select
+  to anon, authenticated
+  using ( true );
+
+create policy "Anyone can insert community messages"
+  on public.community_messages for insert
+  to anon, authenticated
+  with check ( true );
+
+create policy "Anyone can update community message status"
+  on public.community_messages for update
+  to anon, authenticated
+  using ( true )
+  with check ( true );
+
+-- Seed Community Chat Messages
+insert into public.community_messages (sender_name, sender_campus, is_verified, is_anonymous, content, message_type, item, location, status, helped_by)
+values
+  ('Pooja · 2nd yr', 'IIT Delhi', true, false, 'Good morning everyone! Just checked and the pad dispenser at Central Library (Ground floor) was just refilled with fresh stock.', 'chat', null, null, 'open', null),
+  ('Anonymous Student', 'IIT Delhi', true, true, 'SOS! Period started unexpectedly during class. Can anyone spare a regular or heavy flow pad near Lecture Hall Complex?', 'ask_pad', 'Regular pad', 'LHC, 1st floor washroom', 'helped', 'Riya (Himadri)'),
+  ('Riya · Himadri Hostel', 'IIT Delhi', true, false, 'Just handed one over to you outside the LHC washroom! Hope you are feeling better ❤️', 'chat', null, null, 'open', null),
+  ('Tanvi K. · PhD', 'IIT Delhi', true, false, 'I have 2 extra heavy flow pads and panty liners in my locker. Happy to share with anyone who needs them today!', 'offer_pad', '2 × Heavy flow pads', 'Central Library, 2nd floor study cubicles', 'open', null);
+
+
+-- 8. ENABLE REALTIME
+-- -----------------------------------------------------------------------------
+-- Enable real-time updates for emergency pad requests, dispenser telemetry and community chat
 begin;
   -- Add tables to supabase_realtime publication
   alter publication supabase_realtime add table public.pad_requests;
   alter publication supabase_realtime add table public.dispensers;
   alter publication supabase_realtime add table public.community_posts;
+  alter publication supabase_realtime add table public.community_messages;
 commit;
