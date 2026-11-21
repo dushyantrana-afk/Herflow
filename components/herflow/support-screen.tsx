@@ -9,9 +9,9 @@ import type { PadRequest } from '@/lib/request-types'
 export type SupportView = 'periodmate' | 'padwatch' | 'community'
 
 const views: { id: SupportView; label: string }[] = [
+  { id: 'community', label: 'Community Chat' },
   { id: 'periodmate', label: 'PeriodMate' },
   { id: 'padwatch', label: 'PadWatch' },
-  { id: 'community', label: 'Pad-to-Pad' },
 ]
 
 export function SupportScreen({
