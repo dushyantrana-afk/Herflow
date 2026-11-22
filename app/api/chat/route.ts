@@ -100,13 +100,14 @@ export async function POST(req: Request) {
         apiKey: nvidiaApiKey,
       })
       const modelName = process.env.NVIDIA_MODEL?.trim() || 'meta/llama-3.3-70b-instruct'
-      modelInstance = nvidia(modelName)
+      // Use .chat() to ensure it targets /v1/chat/completions (NVIDIA NIM standard endpoint)
+      modelInstance = nvidia.chat(modelName)
     } else if (openaiApiKey) {
       const openai = createOpenAI({
         apiKey: openaiApiKey,
       })
       const modelName = process.env.OPENAI_MODEL?.trim() || 'gpt-4o-mini'
-      modelInstance = openai(modelName)
+      modelInstance = openai.chat(modelName)
     } else {
       // Fallback to Google Gemini
       const google = createGoogleGenerativeAI({
