@@ -5,6 +5,7 @@ import {
   createUIMessageStreamResponse,
   createUIMessageStream,
 } from 'ai'
+import { createOpenAI } from '@ai-sdk/openai'
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
 
 export const maxDuration = 30
@@ -45,28 +46,22 @@ export async function POST(req: Request) {
     const language: string = (bodyData.language as string) || 'en'
     const userContext = bodyData.userContext as UserContext | undefined
 
-    // Check API key
-    const rawKey =
+    // 1. Check for OpenAI key first (primary)
+    const rawOpenAIKey = process.env.OPENAI_API_KEY
+    const openaiApiKey = rawOpenAIKey?.trim().replace(/^["']|["']$/g, '')
+
+    // 2. Fallback to Gemini key if OpenAI key is not provided
+    const rawGeminiKey =
       process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
       process.env.GEMINI_API_KEY ||
       process.env.GOOGLE_API_KEY
+    const geminiApiKey = rawGeminiKey?.trim().replace(/^["']|["']$/g, '')
 
-    const apiKey = rawKey?.trim().replace(/^["']|["']$/g, '')
-
-    if (!apiKey) {
+    if (!openaiApiKey && !geminiApiKey) {
       return streamNotice(
-        'PeriodLens is not configured yet. Please set GOOGLE_GENERATIVE_AI_API_KEY in your Vercel environment variables and redeploy.'
+        'PeriodLens is not configured yet. Please set OPENAI_API_KEY in your Vercel project environment variables (or local .env.local) and redeploy.'
       )
     }
-
-    if (apiKey.startsWith('AQ.')) {
-      return streamNotice(
-        'The Gemini API key in your Vercel deployment is still set to the old placeholder key (starts with "AQ."). Please update GOOGLE_GENERATIVE_AI_API_KEY in Vercel Settings -> Environment Variables with your actual key from https://aistudio.google.com/apikey, then click Redeploy in Vercel.'
-      )
-    }
-
-    // Ensure the SDK can read it even if the user set GEMINI_API_KEY in Vercel
-    process.env.GOOGLE_GENERATIVE_AI_API_KEY = apiKey
 
     // Build personalized system prompt
     let contextSnippet = ''
@@ -92,14 +87,25 @@ export async function POST(req: Request) {
       )
     }
 
-    // Initialize Google provider with explicit API key
-    const google = createGoogleGenerativeAI({
-      apiKey,
-    })
+    // Choose AI model instance
+    let modelInstance
+    if (openaiApiKey) {
+      const openai = createOpenAI({
+        apiKey: openaiApiKey,
+      })
+      const modelName = process.env.OPENAI_MODEL?.trim() || 'gpt-4o-mini'
+      modelInstance = openai(modelName)
+    } else {
+      // Fallback to Google Gemini
+      const google = createGoogleGenerativeAI({
+        apiKey: geminiApiKey as string,
+      })
+      const modelName = process.env.GEMINI_MODEL?.trim() || 'gemini-1.5-flash'
+      modelInstance = google(modelName)
+    }
 
-    const modelName = process.env.GEMINI_MODEL?.trim() || 'gemini-1.5-flash'
     const result = streamText({
-      model: google(modelName),
+      model: modelInstance,
       system: systemPrompt,
       messages: modelMessages,
     })
@@ -108,38 +114,15 @@ export async function POST(req: Request) {
       sendReasoning: false,
       onError(error) {
         console.error('[PeriodLens] Stream error:', error)
-        // Return a user-visible string — this replaces the default "An error occurred."
-        return `Gemini API error: ${describeGeminiError(error)}`
+        return `AI error: ${error instanceof Error ? error.message : String(error)}`
       },
     })
   } catch (err: unknown) {
     console.error('[PeriodLens] Route error:', err)
     return streamNotice(
-      `PeriodLens Error: ${describeGeminiError(err)}\n\nPlease verify your API key in Vercel settings and redeploy.`
+      `PeriodLens Error: ${err instanceof Error ? err.message : String(err)}\n\nPlease verify your OPENAI_API_KEY in Vercel settings and redeploy.`
     )
   }
-}
-
-/**
- * Turn a raw error into a message that actually tells the user what to do,
- * instead of just echoing Google's often-cryptic text.
- */
-function describeGeminiError(error: unknown): string {
-  const raw = error instanceof Error ? error.message : String(error)
-
-  if (/ACCESS_TOKEN_TYPE_UNSUPPORTED|401/.test(raw)) {
-    return `${raw}\n\nThis usually means the API key is an "AQ." style key that Google AI Studio now issues by default, which the Gemini REST API currently rejects for some accounts. Try generating a new key at https://aistudio.google.com/apikey — if it also starts with "AQ.", see https://discuss.ai.google.dev for the latest guidance on that Google-side issue, or use a Vertex AI service-account key instead.`
-  }
-
-  if (/API key not valid|API_KEY_INVALID/.test(raw)) {
-    return `${raw}\n\nThe API key appears to be invalid or has been revoked (this can happen automatically if a key was ever committed to a public repo). Generate a fresh key at https://aistudio.google.com/apikey and set it as GOOGLE_GENERATIVE_AI_API_KEY in your Vercel project settings, then redeploy.`
-  }
-
-  if (/NOT_FOUND|model/i.test(raw) && /404/.test(raw)) {
-    return `${raw}\n\nThe model name may not be available to this key/project. Try setting GEMINI_MODEL=gemini-2.5-flash in your environment variables.`
-  }
-
-  return raw
 }
 
 /** Stream a plain-text notice as an assistant message (always returns 200) */
