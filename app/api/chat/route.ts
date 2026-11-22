@@ -5,7 +5,7 @@ import {
   createUIMessageStreamResponse,
   createUIMessageStream,
 } from 'ai'
-import { google } from '@ai-sdk/google'
+import { createGoogleGenerativeAI } from '@ai-sdk/google'
 
 export const maxDuration = 30
 
@@ -59,6 +59,12 @@ export async function POST(req: Request) {
       )
     }
 
+    if (apiKey.startsWith('AQ.')) {
+      return streamNotice(
+        'The Gemini API key in your Vercel deployment is still set to the old placeholder key (starts with "AQ."). Please update GOOGLE_GENERATIVE_AI_API_KEY in Vercel Settings -> Environment Variables with your actual key from https://aistudio.google.com/apikey, then click Redeploy in Vercel.'
+      )
+    }
+
     // Ensure the SDK can read it even if the user set GEMINI_API_KEY in Vercel
     process.env.GOOGLE_GENERATIVE_AI_API_KEY = apiKey
 
@@ -86,8 +92,12 @@ export async function POST(req: Request) {
       )
     }
 
-    // Use the default google provider — reads GOOGLE_GENERATIVE_AI_API_KEY from env automatically
-    const modelName = process.env.GEMINI_MODEL?.trim() || 'gemini-3.5-flash-lite'
+    // Initialize Google provider with explicit API key
+    const google = createGoogleGenerativeAI({
+      apiKey,
+    })
+
+    const modelName = process.env.GEMINI_MODEL?.trim() || 'gemini-1.5-flash'
     const result = streamText({
       model: google(modelName),
       system: systemPrompt,
