@@ -5,7 +5,6 @@ import {
   createUIMessageStreamResponse,
   createUIMessageStream,
 } from 'ai'
-import { createOpenAI } from '@ai-sdk/openai'
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
 
 export const maxDuration = 30
@@ -46,26 +45,22 @@ export async function POST(req: Request) {
     const language: string = (bodyData.language as string) || 'en'
     const userContext = bodyData.userContext as UserContext | undefined
 
-    // 1. Check for NVIDIA NIM API key (Primary: free Llama 3.3 70B via build.nvidia.com)
-    const rawNvidiaKey = process.env.NVIDIA_API_KEY || process.env.NVIDIA_NIM_API_KEY
-    const nvidiaApiKey = rawNvidiaKey?.trim().replace(/^["']|["']$/g, '')
-
-    // 2. Check for OpenAI key (Fallback)
-    const rawOpenAIKey = process.env.OPENAI_API_KEY
-    const openaiApiKey = rawOpenAIKey?.trim().replace(/^["']|["']$/g, '')
-
-    // 3. Check for Gemini key (Fallback)
-    const rawGeminiKey =
+    // Check Gemini API key
+    const rawKey =
       process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
       process.env.GEMINI_API_KEY ||
       process.env.GOOGLE_API_KEY
-    const geminiApiKey = rawGeminiKey?.trim().replace(/^["']|["']$/g, '')
 
-    if (!nvidiaApiKey && !openaiApiKey && !geminiApiKey) {
+    const apiKey = rawKey?.trim().replace(/^["']|["']$/g, '')
+
+    if (!apiKey) {
       return streamNotice(
-        'PeriodLens is not configured yet. Please set NVIDIA_API_KEY in your Vercel project environment variables (or local .env.local) and redeploy. You can obtain a free key at https://build.nvidia.com/'
+        'PeriodLens is not configured yet. Please set GOOGLE_GENERATIVE_AI_API_KEY in your Vercel environment variables and redeploy.'
       )
     }
+
+    // Ensure the SDK can read it even if the user set GEMINI_API_KEY in Vercel
+    process.env.GOOGLE_GENERATIVE_AI_API_KEY = apiKey
 
     // Build personalized system prompt
     let contextSnippet = ''
@@ -91,34 +86,14 @@ export async function POST(req: Request) {
       )
     }
 
-    // Choose AI model instance
-    let modelInstance
-    if (nvidiaApiKey) {
-      // NVIDIA NIM Free Endpoint (OpenAI-compatible)
-      const nvidia = createOpenAI({
-        baseURL: 'https://integrate.api.nvidia.com/v1',
-        apiKey: nvidiaApiKey,
-      })
-      const modelName = process.env.NVIDIA_MODEL?.trim() || 'meta/llama-3.3-70b-instruct'
-      // Use .chat() to ensure it targets /v1/chat/completions (NVIDIA NIM standard endpoint)
-      modelInstance = nvidia.chat(modelName)
-    } else if (openaiApiKey) {
-      const openai = createOpenAI({
-        apiKey: openaiApiKey,
-      })
-      const modelName = process.env.OPENAI_MODEL?.trim() || 'gpt-4o-mini'
-      modelInstance = openai.chat(modelName)
-    } else {
-      // Fallback to Google Gemini
-      const google = createGoogleGenerativeAI({
-        apiKey: geminiApiKey as string,
-      })
-      const modelName = process.env.GEMINI_MODEL?.trim() || 'gemini-1.5-flash'
-      modelInstance = google(modelName)
-    }
+    // Initialize Google provider with explicit API key
+    const google = createGoogleGenerativeAI({
+      apiKey,
+    })
 
+    const modelName = process.env.GEMINI_MODEL?.trim() || 'gemini-1.5-flash'
     const result = streamText({
-      model: modelInstance,
+      model: google(modelName),
       system: systemPrompt,
       messages: modelMessages,
     })
@@ -127,13 +102,13 @@ export async function POST(req: Request) {
       sendReasoning: false,
       onError(error) {
         console.error('[PeriodLens] Stream error:', error)
-        return `AI error: ${error instanceof Error ? error.message : String(error)}`
+        return `Gemini API error: ${error instanceof Error ? error.message : String(error)}`
       },
     })
   } catch (err: unknown) {
     console.error('[PeriodLens] Route error:', err)
     return streamNotice(
-      `PeriodLens Error: ${err instanceof Error ? err.message : String(err)}\n\nPlease verify your NVIDIA_API_KEY in Vercel settings and redeploy.`
+      `PeriodLens Error: ${err instanceof Error ? err.message : String(err)}\n\nPlease verify your GOOGLE_GENERATIVE_AI_API_KEY in Vercel settings and redeploy.`
     )
   }
 }

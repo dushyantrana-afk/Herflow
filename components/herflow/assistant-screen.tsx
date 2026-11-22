@@ -104,7 +104,7 @@ export function AssistantScreen() {
           <div>
             <h1 className="text-base font-semibold leading-tight">PeriodLens</h1>
             <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-              <span>NVIDIA NIM · Llama 3.3 70B</span>
+              <span>Google Gemini AI</span>
               <span>·</span>
               <span className="text-primary font-medium">Day {user.cycleDay} ({user.phase})</span>
             </p>
