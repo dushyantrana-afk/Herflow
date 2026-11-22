@@ -65,7 +65,7 @@ export function LandingPage({ onOpenAuth, onExploreDemo }: LandingPageProps) {
               SOS Delivery
             </a>
             <a href="#periodlens" className="hover:text-foreground transition-colors">
-              OpenAI
+              NVIDIA NIM
             </a>
             <a href="#security" className="hover:text-foreground transition-colors">
               Campus Security
@@ -222,14 +222,14 @@ export function LandingPage({ onOpenAuth, onExploreDemo }: LandingPageProps) {
                 </div>
               </div>
 
-              {/* Card 3: PeriodLens OpenAI */}
+              {/* Card 3: PeriodLens NVIDIA NIM */}
               <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="flex size-8 items-center justify-center rounded-xl bg-lavender-soft text-primary font-bold">
                     <Bot className="size-4" />
                   </span>
                   <span className="rounded-full bg-lavender-soft px-2 py-0.5 text-[10px] font-semibold text-primary">
-                    GPT-4o Mini
+                    NVIDIA Llama 3.3
                   </span>
                 </div>
                 <div>
@@ -326,10 +326,10 @@ export function LandingPage({ onOpenAuth, onExploreDemo }: LandingPageProps) {
                   <Bot className="size-6" />
                 </div>
                 <h3 className="text-xl font-bold tracking-tight text-foreground">
-                  PeriodLens AI Companion (OpenAI)
+                  PeriodLens AI Companion (NVIDIA NIM)
                 </h3>
                 <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                  Get private, judgment-free answers to symptoms, mood swings, PMS, and cycle irregularities. Powered by OpenAI and aligned with WHO, NHS, and National Health Mission protocols. Bilingual in English and Hindi.
+                  Get private, judgment-free answers to symptoms, mood swings, PMS, and cycle irregularities. Powered by NVIDIA NIM Llama 3.3 70B and aligned with WHO, NHS, and National Health Mission protocols. Bilingual in English and Hindi.
                 </p>
                 <ul className="mt-5 space-y-2 text-xs font-medium text-foreground">
                   <li className="flex items-center gap-2">

@@ -46,20 +46,24 @@ export async function POST(req: Request) {
     const language: string = (bodyData.language as string) || 'en'
     const userContext = bodyData.userContext as UserContext | undefined
 
-    // 1. Check for OpenAI key first (primary)
+    // 1. Check for NVIDIA NIM API key (Primary: free Llama 3.3 70B via build.nvidia.com)
+    const rawNvidiaKey = process.env.NVIDIA_API_KEY || process.env.NVIDIA_NIM_API_KEY
+    const nvidiaApiKey = rawNvidiaKey?.trim().replace(/^["']|["']$/g, '')
+
+    // 2. Check for OpenAI key (Fallback)
     const rawOpenAIKey = process.env.OPENAI_API_KEY
     const openaiApiKey = rawOpenAIKey?.trim().replace(/^["']|["']$/g, '')
 
-    // 2. Fallback to Gemini key if OpenAI key is not provided
+    // 3. Check for Gemini key (Fallback)
     const rawGeminiKey =
       process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
       process.env.GEMINI_API_KEY ||
       process.env.GOOGLE_API_KEY
     const geminiApiKey = rawGeminiKey?.trim().replace(/^["']|["']$/g, '')
 
-    if (!openaiApiKey && !geminiApiKey) {
+    if (!nvidiaApiKey && !openaiApiKey && !geminiApiKey) {
       return streamNotice(
-        'PeriodLens is not configured yet. Please set OPENAI_API_KEY in your Vercel project environment variables (or local .env.local) and redeploy.'
+        'PeriodLens is not configured yet. Please set NVIDIA_API_KEY in your Vercel project environment variables (or local .env.local) and redeploy. You can obtain a free key at https://build.nvidia.com/'
       )
     }
 
@@ -89,7 +93,15 @@ export async function POST(req: Request) {
 
     // Choose AI model instance
     let modelInstance
-    if (openaiApiKey) {
+    if (nvidiaApiKey) {
+      // NVIDIA NIM Free Endpoint (OpenAI-compatible)
+      const nvidia = createOpenAI({
+        baseURL: 'https://integrate.api.nvidia.com/v1',
+        apiKey: nvidiaApiKey,
+      })
+      const modelName = process.env.NVIDIA_MODEL?.trim() || 'meta/llama-3.3-70b-instruct'
+      modelInstance = nvidia(modelName)
+    } else if (openaiApiKey) {
       const openai = createOpenAI({
         apiKey: openaiApiKey,
       })
@@ -120,7 +132,7 @@ export async function POST(req: Request) {
   } catch (err: unknown) {
     console.error('[PeriodLens] Route error:', err)
     return streamNotice(
-      `PeriodLens Error: ${err instanceof Error ? err.message : String(err)}\n\nPlease verify your OPENAI_API_KEY in Vercel settings and redeploy.`
+      `PeriodLens Error: ${err instanceof Error ? err.message : String(err)}\n\nPlease verify your NVIDIA_API_KEY in Vercel settings and redeploy.`
     )
   }
 }
