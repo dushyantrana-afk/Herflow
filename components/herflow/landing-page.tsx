@@ -229,7 +229,7 @@ export function LandingPage({ onOpenAuth, onExploreDemo }: LandingPageProps) {
                     <Bot className="size-4" />
                   </span>
                   <span className="rounded-full bg-lavender-soft px-2 py-0.5 text-[10px] font-semibold text-primary">
-                    Gemini 1.5 Flash
+                    Gemini · Grok · NVIDIA
                   </span>
                 </div>
                 <div>
@@ -326,10 +326,10 @@ export function LandingPage({ onOpenAuth, onExploreDemo }: LandingPageProps) {
                   <Bot className="size-6" />
                 </div>
                 <h3 className="text-xl font-bold tracking-tight text-foreground">
-                  PeriodLens AI Companion (Google Gemini)
+                  PeriodLens AI Companion (Gemini · Grok · NVIDIA)
                 </h3>
                 <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                  Get private, judgment-free answers to symptoms, mood swings, PMS, and cycle irregularities. Powered by Google Gemini and aligned with WHO, NHS, and National Health Mission protocols. Bilingual in English and Hindi.
+                  Get private, judgment-free answers to symptoms, mood swings, PMS, and cycle irregularities. Powered by a multi-provider fallback engine (Google Gemini, Grok, and NVIDIA NIM) aligned with WHO, NHS, and National Health Mission protocols. Bilingual in English and Hindi.
                 </p>
                 <ul className="mt-5 space-y-2 text-xs font-medium text-foreground">
                   <li className="flex items-center gap-2">
