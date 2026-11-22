@@ -99,15 +99,37 @@ export async function POST(req: Request) {
       onError(error) {
         console.error('[PeriodLens] Stream error:', error)
         // Return a user-visible string — this replaces the default "An error occurred."
-        return `Gemini API error: ${error instanceof Error ? error.message : String(error)}`
+        return `Gemini API error: ${describeGeminiError(error)}`
       },
     })
   } catch (err: unknown) {
     console.error('[PeriodLens] Route error:', err)
     return streamNotice(
-      `PeriodLens Error: ${err instanceof Error ? err.message : String(err)}\n\nPlease verify your API key in Vercel settings and redeploy.`
+      `PeriodLens Error: ${describeGeminiError(err)}\n\nPlease verify your API key in Vercel settings and redeploy.`
     )
   }
+}
+
+/**
+ * Turn a raw error into a message that actually tells the user what to do,
+ * instead of just echoing Google's often-cryptic text.
+ */
+function describeGeminiError(error: unknown): string {
+  const raw = error instanceof Error ? error.message : String(error)
+
+  if (/ACCESS_TOKEN_TYPE_UNSUPPORTED|401/.test(raw)) {
+    return `${raw}\n\nThis usually means the API key is an "AQ." style key that Google AI Studio now issues by default, which the Gemini REST API currently rejects for some accounts. Try generating a new key at https://aistudio.google.com/apikey — if it also starts with "AQ.", see https://discuss.ai.google.dev for the latest guidance on that Google-side issue, or use a Vertex AI service-account key instead.`
+  }
+
+  if (/API key not valid|API_KEY_INVALID/.test(raw)) {
+    return `${raw}\n\nThe API key appears to be invalid or has been revoked (this can happen automatically if a key was ever committed to a public repo). Generate a fresh key at https://aistudio.google.com/apikey and set it as GOOGLE_GENERATIVE_AI_API_KEY in your Vercel project settings, then redeploy.`
+  }
+
+  if (/NOT_FOUND|model/i.test(raw) && /404/.test(raw)) {
+    return `${raw}\n\nThe model name may not be available to this key/project. Try setting GEMINI_MODEL=gemini-2.5-flash in your environment variables.`
+  }
+
+  return raw
 }
 
 /** Stream a plain-text notice as an assistant message (always returns 200) */

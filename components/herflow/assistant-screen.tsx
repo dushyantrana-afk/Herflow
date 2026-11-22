@@ -45,7 +45,22 @@ export function AssistantScreen() {
     const trimmed = text.trim()
     if (!trimmed || busy) return
     setChatError(null)
-    sendMessage({ text: trimmed })
+    sendMessage(
+      { text: trimmed },
+      {
+        body: {
+          language,
+          userContext: {
+            name: user.name,
+            campus: user.campus,
+            cycleDay: user.cycleDay,
+            cycleLength: user.cycleLength,
+            phase: user.phase,
+            nextPeriodInDays: user.nextPeriodInDays,
+          },
+        },
+      }
+    )
     setInput('')
   }
 
